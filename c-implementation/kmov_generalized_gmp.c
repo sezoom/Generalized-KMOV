@@ -3,6 +3,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <gmp.h>
+#include <time.h>
+
+/* define minimum duration of each timing, and min. number of iterations */
+
+#define MIN_TIME 5.0
+#define MIN_ITERS 5 
+
 
 struct elliptic_curve_t {
 	mpz_t a;
@@ -12,10 +19,21 @@ struct elliptic_curve_t {
 struct point_t {
 	mpz_t x;
 	mpz_t y;
+	mpz_t z;
 };
 
 struct elliptic_curve_t ec;
 
+void point_doubling_proj(struct point_t P, struct point_t *R){
+
+	mpz_t s;
+	mpz_init(s);
+	mpz_set(s, P.y);
+	mpz_powm(s, s, 2, ec.n);
+	mpz_mul_ui(s, s, 4);
+	mpz_mul(s, s, P.x);
+	mpz_mod(s,s,ec.n);
+}
 void point_doubling(struct point_t P, struct point_t *R)
 {
 	mpz_t slope, temp;
@@ -151,6 +169,12 @@ void scalar_multiplication( struct point_t *R,struct point_t P, mpz_t m)
 
 int main(int argc, char *argv[])
 {
+
+	int iterations=0;
+	clock_t start;
+	double elapsed;
+	int i;
+
 	mpz_init(ec.a); 
 	mpz_init(ec.n);
 
@@ -191,7 +215,7 @@ int main(int argc, char *argv[])
 	mpz_out_str(stdout, 16, c.x); puts("");
 	printf("\nc.y: ");	
 	mpz_out_str(stdout, 16, c.y); puts("");
-	
+
 	scalar_multiplication(&p2,c, d);
 
 	printf("\nplain text after decryption:\n----------------------\n");	
@@ -199,6 +223,45 @@ int main(int argc, char *argv[])
 	mpz_out_str(stdout, 16, p2.x); puts("");
 	printf("\np2.y: ");	
 	mpz_out_str(stdout, 16, p2.y); puts("");
+
+
+	printf("\nCompute Timing for Encryption:\n--------------\n");	
+
+	for(i=0;i<5;i++)
+	{
+		iterations=0;
+		start=clock();
+
+		do {
+			scalar_multiplication(&c,p, e);
+
+			iterations++;
+			elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
+			//printf(" %8.10lf elapsed\n",elapsed);
+		} while (elapsed<MIN_TIME || iterations<MIN_ITERS);
+
+		elapsed=1000*elapsed/(double)iterations;
+		//printf("R - %8d iterations\n",iterations);
+		printf( " %8.10lf ms (milli seconds) per iteration\n",elapsed);
+	}
+
+	printf("\nCompute Timing for Decryption:\n--------------\n");	
+
+	for(i=0;i<5;i++)
+	{
+		iterations=0;
+		start=clock();
+
+		do {
+			scalar_multiplication(&p2,c, d);
+
+			iterations++;
+			elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
+		} while (elapsed<MIN_TIME || iterations<MIN_ITERS);
+
+		elapsed=1000*elapsed/(double)iterations;
+		printf( " %8.10lf ms (milli seconds) per iteration\n",elapsed);
+	}
 
 
 

@@ -3,6 +3,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <gmp.h>
+#include <time.h>
+
+/* define minimum duration of each timing, and min. number of iterations */
+
+#define MIN_TIME 5.0
+#define MIN_ITERS 5 
+
 
 struct rsa_public_key_t {
 	mpz_t e;
@@ -36,20 +43,24 @@ void doub_mult_algo2(  mpz_t a,mpz_t exp,mpz_t modulu, mpz_t m)
 			mpz_mul(a,a,m);
 			mpz_mod(a,a,modulu);
 		}
-}
+	}
 
 }		
 
 
 void doub_mult_algo(  mpz_t a,mpz_t exp,mpz_t modulu, mpz_t m)
 {
- mpz_powm(a, m, exp, modulu);
+	mpz_powm(a, m, exp, modulu);
 }		
 
 
 
 int main(int argc, char *argv[])
 {
+	int iterations=0;
+	clock_t start;
+	double elapsed;
+	int i;
 	mpz_init(pubk.e); 
 	mpz_init(pubk.n);
 	mpz_t m;
@@ -75,17 +86,54 @@ int main(int argc, char *argv[])
 	mpz_out_str(stdout, 16, m); puts("");
 
 
- doub_mult_algo(c,pubk.e,pubk.n, m);
+	doub_mult_algo(c,pubk.e,pubk.n, m);
 	printf("\ncipher text:\n--------------\n");	
 	printf("\nc.x: ");	
 	mpz_out_str(stdout, 16, c); puts("");
 
- doub_mult_algo(m2,pivk.d,pubk.n, c);
+	doub_mult_algo(m2,pivk.d,pubk.n, c);
 	printf("\nplain text:\n--------------\n");	
 	printf("\nm2:: ");	
 	mpz_out_str(stdout, 16, m2); puts("");
 
 
+	printf("\nCompute Timing for Encryption:\n--------------\n");	
+
+	for(i=0;i<5;i++)
+	{
+		iterations=0;
+		start=clock();
+
+		do {
+			doub_mult_algo(c,pubk.e,pubk.n, m);
+
+			iterations++;
+			elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
+			//printf(" %8.10lf elapsed\n",elapsed);
+		} while (elapsed<MIN_TIME || iterations<MIN_ITERS);
+
+		elapsed=1000*elapsed/(double)iterations;
+		//printf("R - %8d iterations\n",iterations);
+		printf( " %8.10lf ms (milli seconds) per iteration\n",elapsed);
+	}
+
+	printf("\nCompute Timing for Decryption:\n--------------\n");	
+
+	for(i=0;i<5;i++)
+	{
+		iterations=0;
+		start=clock();
+
+		do {
+			doub_mult_algo(m2,pivk.d,pubk.n, c);
+
+			iterations++;
+			elapsed=(double)(clock()-start)/(double)CLOCKS_PER_SEC;
+		} while (elapsed<MIN_TIME || iterations<MIN_ITERS);
+
+		elapsed=1000*elapsed/(double)iterations;
+		printf( " %8.10lf ms (milli seconds) per iteration\n",elapsed);
+	}
 
 
 	mpz_clear(pubk.e);
