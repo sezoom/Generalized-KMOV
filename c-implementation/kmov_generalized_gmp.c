@@ -48,6 +48,8 @@ void point_proj_to_affine(struct point_t P, struct point_t *R){
 	mpz_mod(R->y,R->y,ec.n);
 
 	mpz_set_ui(R->z, 1);
+	
+	mpz_clear(z2);mpz_clear(z3);
 
 
 }
@@ -217,17 +219,12 @@ Z3 = Z1*Z2*P
 	mpz_mod(S2,S2,ec.n); 
 	mpz_mul_si(T1, T1, -2);// T1= -2 * RR^2    //reuse T1
 	mpz_mod(T1,T1,ec.n); 
-/*	mpz_sub_ui(U1,ec.n , 2);
-	mpz_mul(T1, T1, U1); 
-	mpz_mod(T1,T1,ec.n); 
-*/
 	mpz_add(T1,T1,S2);
 	mpz_mod(T1,T1,ec.n); 
 	mpz_mul(T1,T1,RR);
 	mpz_mod(T1,T1,ec.n); 
 	
 	mpz_sub(T1,T1,T2);
-//	mpz_div_ui(T1,T1,2);
 	mpz_mod(T1,T1,ec.n); 
 	mpz_div_2exp(R->y,T1,1);
 
@@ -335,8 +332,8 @@ void scalar_multiplication( struct point_t *R,struct point_t P, mpz_t m)
 		mpz_set_ui(T.x, 0);
 		mpz_set_ui(T.y, 0);
 		mpz_set_ui(T.z, 1);
-		//point_doubling(Q, &T);
-		point_doubling_proj(Q,&T);
+		point_doubling(Q, &T);
+		//point_doubling_proj(Q,&T);
 
 		mpz_set(Q.x, T.x);
 		mpz_set(Q.y, T.y);
@@ -345,13 +342,12 @@ void scalar_multiplication( struct point_t *R,struct point_t P, mpz_t m)
 		mpz_set(T.y, R->y);
 		mpz_set(T.z, R->z);
 		if(mpz_tstbit(m, loop))
-		//	point_addition(T, Q, R);
-			point_addition_proj(T, Q, R);
+			point_addition(T, Q, R);
+//			point_addition_proj(T, Q, R);
 	}
 
-	mpz_clear(Q.x); mpz_clear(Q.y);
-	mpz_clear(T.x); mpz_clear(T.y);
-	mpz_clear(T.z); mpz_clear(Q.z);
+	mpz_clear(Q.x); mpz_clear(Q.y);mpz_clear(Q.z);
+	mpz_clear(T.x); mpz_clear(T.y);mpz_clear(T.z); 
 }		
 
 int main(int argc, char *argv[])
