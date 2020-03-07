@@ -1,5 +1,7 @@
 
 /* Implementation of RSA Algorithm  */
+/* Hamad ALSHEHHI and Abderrahmane NITAJ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <gmp.h>
