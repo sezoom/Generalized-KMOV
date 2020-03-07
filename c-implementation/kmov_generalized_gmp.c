@@ -1,5 +1,7 @@
 
 /* Implementation of short weierstrass curve (y^2 = x^3 + ax) over Ring Z/Zn  in Affine and  Jacobian coordinates  */
+/* Hamad ALSHEHHI and Abderrahmane NITAJ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <gmp.h>

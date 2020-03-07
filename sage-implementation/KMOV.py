@@ -1,5 +1,5 @@
-# This file show the implementation of KMOV scheme, HAL @02-02-2020
-
+# This file show the implementation of KMOV scheme,
+# Hamad ALSHEHHI and Abderrahmane NITAJ
 
 from sage.all import *
 
